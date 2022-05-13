@@ -5,29 +5,6 @@ from threading import Thread
 from PIL import Image, ImageTk
 
 
-def client_program():
-
-    print('CLIENT')
-
-    host = socket.gethostname()  # as both code is running on same pc
-    port = 5000  # socket server port number
-
-    client_socket = socket.socket()  # instantiate
-    client_socket.connect((host, port))  # connect to the server
-
-    message = input(" -> ")  # take input
-
-    while message.lower().strip() != 'bye':
-        client_socket.send(message.encode())  # send message
-        data = client_socket.recv(1024).decode()  # receive response
-
-        print('Received from server: ' + data)  # show in terminal
-
-        message = input(" -> ")  # again take input
-
-    client_socket.close()  # close the connection
-
-
 def server_program():
 
     print('SERVER')
@@ -57,7 +34,6 @@ def server_program():
     conn.close()  # close the connection
 
 
-
 class Server:
     def __init__(self):
         # IP address
@@ -65,28 +41,38 @@ class Server:
 
         # Intialize UI
         self.root = tk.Tk()
-        self.root.geometry('450x150')
+        self.root.geometry('450x250')
         self.root.title('Server')
 
         # Button
-        self.root.turn_on_off_button = tk.Button(self._root, text="OPEN SERVER", bg="#5DADE2",
+        self.root.turn_on_off_button = tk.Button(self.root, text="OPEN SERVER", bg="#5DADE2",
                                                  width=200, anchor=tk.CENTER,
-                                                 font=("Consolas 20 bold"), command=self.open_close_server,
+                                                 font=("Consolas 20 bold"), command=self.turn_on_off,
                                                  compound=tk.TOP)
 
+        self.root.turn_on_off_button.place(
+            relx=0.5, rely=0.6, anchor=tk.CENTER)
 
+        self.root.lbl_server_address = tk.Label(self.root, text="IP: " + str(self.IP[0]), width=25,
+
+                                                font=("Consolas 20 bold"), fg="#ff0000")
+        self.root.lbl_server_address.place(
+            relx=0.5, rely=0.10, anchor=tk.CENTER)
 
     def run(self):
         self.root.mainloop()
 
-    def turn_server(self):
-        if self.root.turn_on_off_button["text"] = "OPEN SERVER":
-            self.server =  socket.socket()
+    def turn_on_off(self):
+        if self.root.turn_on_off_button["text"] == "OPEN SERVER":
+            self.server = socket.socket()
 
             self.server.bind(self.IP)
             self.server.listen(1)
-            print("SERVER ADDRESS:", self.server.address)
+            print("SERVER ADDRESS:", self.IP)
 
+            self.root.turn_on_off_button.configure(text="OPENING")
+
+            Thread(target=self.accept_connect, daemon=True).start()
 
     def accept_connect(self):
         while True:
@@ -96,15 +82,14 @@ class Server:
                 target=self.handle_client, daemon=True)
             handle_client_thread.start()
 
+    def handle_client(self):
+        while True:
+            cmd = self.client.recv(16).decode('utf8')
+            print('REQUEST:', cmd)
+            if cmd == 'close':
+                self.client.close()
 
 
-
-
-    
-
-    
-
-
-    
-
-
+print("SERVER")
+app = Server()
+app.run()
