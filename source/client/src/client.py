@@ -1,15 +1,19 @@
 import re
 import os
 import socket
+from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from threading import Thread
 import PIL
 from PIL import ImageTk
 from PIL import Image
+from tkinter import filedialog
+import shutil
 
-staffs = [[1, 'Nguyen Quang Binh', '077xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt.png'],
-          [2, 'Nguyen Trong Hieu', '078xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt.png'],
+
+staffs = [[1, 'Nguyen Quang Binh', '077xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt1.png'],
+          [2, 'Nguyen Trong Hieu', '078xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt2.png'],
           [3, 'Nguyen Bao Tin', '079xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt.png']]
 
 class Client:
@@ -63,18 +67,30 @@ class Client:
         self.root.geometry('450x450')
         self.root.all_staffs_frame = tk.Frame(self.root)
         self.root.all_staffs_frame.title = tk.Label(self.root.all_staffs_frame, text="Danh sach nhan vien", font=("Consolas 20 bold")).pack(pady=10)
-        self.all_staffs = ttk.Treeview(self.root.all_staffs_frame, show='headings')
+        self.all_staffs = ttk.Treeview(self.root.all_staffs_frame)
         self.all_staffs['columns'] = ("ID", "NAME")
-        self.all_staffs.column("ID", anchor="center", width=120)
-        self.all_staffs.column("NAME", anchor="w", width=200)
+        # self.all_staffs.column("AVATAR", anchor="center", width=100)
+        self.all_staffs.column("#0", anchor="w", width=30, stretch='NO')
+        self.all_staffs.column("ID", anchor="center", width=120, stretch='NO')
+        self.all_staffs.column("NAME", anchor="w", width=200, stretch='NO')
+
+        # self.all_staffs.heading("AVATAR", text="Avatar", anchor="center")
         self.all_staffs.heading("ID", text="Mã số", anchor="center")
         self.all_staffs.heading("NAME", text="Họ và tên", anchor="w")
         # Test
-        self.all_staffs.insert('', tk.END, values=staffs[0][0:2])
-        self.all_staffs.insert('', tk.END, values=staffs[1][0:2])
-        self.all_staffs.insert('', tk.END, values=staffs[2][0:2])
+        self.root.size_staffs = int(len(staffs[0])/len(staffs))+1
+        for i in range(self.root.size_staffs):
+            self.root.all_staffs_frame.img = ImageTk.PhotoImage(Image.open(staffs[i][5]).resize((20,20), Image.ANTIALIAS))
+            self.all_staffs.insert('', tk.END, image=self.root.all_staffs_frame.img, values=(staffs[i][0], staffs[i][1]))
+        # self.all_staffs.insert('', tk.END, values=staffs[0][0:2])
+        # self.all_staffs.insert('', tk.END, values=staffs[1][0:2])
+        # self.all_staffs.insert('', tk.END, values=staffs[2][0:2])
         # Test
         self.all_staffs.pack(pady=20)
+
+        self.root.all_staffs_frame.download_all_ava = tk.Button(self.root.all_staffs_frame, text="Tải tất cả ảnh", command=self.change_to_download_all_btn)
+        self.root.all_staffs_frame.download_all_ava.pack()
+
         # Back button
         self.root.all_staffs_frame.back_button = tk.Button(self.root.all_staffs_frame, text="Trở về", command=self.change_to_connect)
         self.root.all_staffs_frame.back_button.pack()
@@ -85,6 +101,7 @@ class Client:
     def show_detail_a_staff(self, event):
         self.root.all_staffs_frame.forget()
         iid = int(self.all_staffs.focus()[1:])-1
+        self.root.iid_staffs = iid
         self.root.staff_detail_frame = tk.Frame(self.root)
         self.root.staff_detail_frame.title =tk.Label(self.root.staff_detail_frame, text="Thong tin chi tiet", font=("Consolas 20 bold")).pack(pady=10)
 
@@ -123,8 +140,12 @@ class Client:
         self.root.staff_detail_frame.infor.pack()
 
         # Avatar
-        self.root.staff_detail_frame.avatar = ImageTk.PhotoImage(Image.open(staffs[iid][4]).resize((100,100), Image.ANTIALIAS))
+        self.root.staff_detail_frame.avatar = ImageTk.PhotoImage(Image.open(staffs[iid][5]).resize((100,100), Image.ANTIALIAS))
         tk.Label(self.root.staff_detail_frame, image=self.root.staff_detail_frame.avatar).pack(pady=10)
+
+        # Download button
+        self.root.staff_detail_frame.download_btn = tk.Button(self.root.staff_detail_frame, text="Tải ảnh đại diện", command=self.change_to_download_big_avatar)
+        self.root.staff_detail_frame.download_btn.pack()
 
         # Back button
         self.root.staff_detail_frame.back_button = tk.Button(self.root.staff_detail_frame, text="Trở về", command=self.change_to_show_all_staffs)
@@ -139,6 +160,23 @@ class Client:
     def change_to_connect(self):
         self.root.all_staffs_frame.forget()
         self.load_gui()
+
+    def change_to_download_big_avatar(self):
+        location =  filedialog.askdirectory()
+        print (location)
+        print(self.root.staff_detail_frame.avatar)
+        print(type(self.root.staff_detail_frame.avatar))
+
+        shutil.copy(staffs[self.root.iid_staffs][5], location)
+
+    def change_to_download_all_btn(self):
+        location =  filedialog.askdirectory()
+        des = location + '/all_small_ava/'
+        if not os.path.exists(des):
+            os.mkdir(des) 
+        for i in range(self.root.size_staffs):
+            shutil.copy(staffs[i][5], des)
+
 
 print('Client')
 client = Client()
