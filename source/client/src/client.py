@@ -78,10 +78,11 @@ class Client:
         self.all_staffs.heading("ID", text="Mã số", anchor="center")
         self.all_staffs.heading("NAME", text="Họ và tên", anchor="w")
         # Test
+        self.root.all_staffs_frame.img_temp = []
         self.root.size_staffs = int(len(staffs[0])/len(staffs))+1
         for i in range(self.root.size_staffs):
-            self.root.all_staffs_frame.img = ImageTk.PhotoImage(Image.open(staffs[i][5]).resize((20,20), Image.ANTIALIAS))
-            self.all_staffs.insert('', tk.END, image=self.root.all_staffs_frame.img, values=(staffs[i][0], staffs[i][1]))
+            self.root.all_staffs_frame.img_temp.append(ImageTk.PhotoImage(Image.open(staffs[i][5]).resize((20,20), Image.ANTIALIAS)))
+            self.all_staffs.insert('', tk.END, image=self.root.all_staffs_frame.img_temp[i], values=(staffs[i][0], staffs[i][1]))
         # self.all_staffs.insert('', tk.END, values=staffs[0][0:2])
         # self.all_staffs.insert('', tk.END, values=staffs[1][0:2])
         # self.all_staffs.insert('', tk.END, values=staffs[2][0:2])
