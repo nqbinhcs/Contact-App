@@ -23,7 +23,8 @@ class Server:
 
     def __init__(self):
         # IP address
-        self.IP = (socket.gethostbyname(socket.gethostname()), PORT)
+        # self.IP = (socket.gethostbyname(socket.gethostname()), PORT)
+        self.IP = ('127.0.1.1', PORT)
 
         # Intialize UI
         self.root = tk.Tk()
@@ -59,8 +60,7 @@ class Server:
 
             self.root.turn_on_off_button.configure(text="OPENING")
 
-            # Thread(target=self.accept_connect, daemon=True).start()
-            self.accept_connect()
+            Thread(target=self.accept_connect, daemon=True).start()
 
     def accept_connect(self):
         while True:
