@@ -10,38 +10,10 @@ from PIL import Image, ImageTk
 import random
 
 
-def server_program():
+BUFFER_SIZE = 4096
+SEPARATOR = "<,>"
 
-    print('SERVER')
-
-    # get the hostname
-    host = socket.gethostname()
-    port = 5000  # initiate port no above 1024
-
-    server_socket = socket.socket()  # get instance
-    # look closely. The bind() function takes tuple as argument
-    server_socket.bind((host, port))  # bind host address and port together
-
-    # configure how many client the server can listen simultaneously
-    server_socket.listen(2)
-    conn, address = server_socket.accept()  # accept new connection
-    print("Connection from: " + str(address))
-    while True:
-        # receive data stream. it won't accept data packet greater than 1024 bytes
-        data = conn.recv(1024).decode()
-        if not data:
-            # if data is not received break
-            break
-        print("from connected user: " + str(data))
-        data = input(' -> ')
-        conn.send(data.encode())  # send data to the client
-
-    conn.close()  # close the connection
-
-
-BUFFER_SIZE = 1024
-SEPARATOR = "<SEPERATOR>"
-
+# We use random port
 PORT = random.randrange(60000, 62000)
 
 
@@ -67,7 +39,7 @@ class Server:
         self.root.turn_on_off_button.place(
             relx=0.5, rely=0.6, anchor=tk.CENTER)
 
-        self.root.lbl_server_address = tk.Label(self.root, text="IP: " + str(self.IP[0]), width=25,
+        self.root.lbl_server_address = tk.Label(self.root, text="Address: " + str(self.IP[0]) + ' - ' + str(PORT), width=25,
 
                                                 font=("Consolas 20 bold"), fg="#ff0000")
         self.root.lbl_server_address.place(
@@ -79,8 +51,8 @@ class Server:
     def turn_on_off(self):
         if self.root.turn_on_off_button["text"] == "OPEN SERVER":
             # config for TCP option
-            # self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server = socket.socket()
+            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # self.server = socket.socket()
             self.server.bind(self.IP)
             self.server.listen(1)
             print("SERVER ADDRESS:", self.IP)
@@ -108,40 +80,21 @@ class Server:
                 self.send_all_contacts()
             elif cmd == 'GETALL 1':
                 self.send_all_contacts_thumbnail()
-            elif cmd == 'GET':
-                self.shutdown()
             elif cmd == 'QUIT':
                 self.client.close()
                 break
-
-        # cmd = self.client.recv(64).decode('utf8')
-        # if cmd == 'GETALL 1':
-        #     self.send_all_contacts_thumbnail()
-
-    def send_file(self, file_name):
-        file_size = os.path.getsize(file_name)
-
-        self.client.sendall(
-            f"{file_name}{SEPARATOR}{file_size}".encode())
-
-        with open(file_name, "rb") as f:
-            while True:
-                # read the bytes from the file
-                bytes_read = f.read(BUFFER_SIZE)
-                if not bytes_read:
-                    break
-                self.client.sendall(bytes_read)
+            else: 
+                if cmd[:5] == 'GET 0': # Ex: GET 0 3 -> get id = 3
+                    self.send_contact(contact_id = int(cmd[5:]))
+                elif cmd[:5] == 'GET 1': # GET 1 3 -> get_id = 3
+                    self.send_contact_avatar(contact_id =  int(cmd[5:]))
 
     def send_all_contacts(self):
-        result = self.db.get_all_contacts()
-        print(result)
-        number_of_contacts = len(result)
-        self.client.sendall(bytes(str(number_of_contacts), "utf8"))
+        contacts = self.db.get_all_contacts()
 
-        for i in range(number_of_contacts):
-            print(f'Sending contact {i + 1}:')
-            data = SEPARATOR.join([str(x) for x in result[i]])
-            self.client.sendall(bytes(data, "utf8"))
+        data = SEPARATOR.join(
+            [str(contact[0]) + SEPARATOR + str(contact[1]) for contact in contacts])
+        self.client.sendall(bytes(str(data), "utf8"))
 
     def send_all_contacts_thumbnail(self):
         sbuf = buffer.Buffer(self.client)
@@ -158,19 +111,25 @@ class Server:
                 sbuf.put_bytes(f.read())
             print('File Sent')
 
-        
-        # number_of_contacts = len(result)
-        # print('Sending number of contacts')
-        # self.client.sendall(bytes(str(number_of_contacts), "utf8"))
-        # self.client.sendall(bytes(str(number_of_contacts), "utf8"))
-        # for i in range(number_of_contacts):
-        #     print(f'Sending thumbnail contact {i + 1}:')
+    def send_contact(self, contact_id):
+        contact = self.db.get_contact(contact_id)
+        data = SEPARATOR.join(
+            [str(inf) for inf in contact])
+        self.client.sendall(bytes(str(data), "utf8"))
 
-        #     # print("Sending ID")
-        #     # self.client.sendall(bytes(str(result[i][0]), "utf8"))
+    def send_contact_avatar(self, contact_id):
+        sbuf = buffer.Buffer(self.client)
+        file_name = self.db.get_contact_avatar(contact_id)
 
-        #     print("Sending thumbnail")
-        #     self.send_file(result[i][1])
+        print(file_name)
+        sbuf.put_utf8(file_name)
+
+        file_size = os.path.getsize(file_name)
+        sbuf.put_utf8(str(file_size))
+
+        with open(file_name, 'rb') as f:
+            sbuf.put_bytes(f.read())
+        print('File Sent')
 
 
 print("SERVER")

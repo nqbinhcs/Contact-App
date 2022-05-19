@@ -14,7 +14,8 @@ import shutil
 
 
 staffs = [[1, 'Nguyen Quang Binh', '077xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt1.png'],
-          [2, 'Nguyen Trong Hieu', '078xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt2.png'],
+          [2, 'Nguyen Trong Hieu', '078xxxxxxx', '2012xxxx@student.hcmus.edu.vn',
+              'source/server/assets/images/avt.png', 'source/server/assets/images/avt2.png'],
           [3, 'Nguyen Bao Tin', '079xxxxxxx', '2012xxxx@student.hcmus.edu.vn', 'source/server/assets/images/avt.png', 'source/server/assets/images/avt.png']]
 
 
@@ -71,7 +72,8 @@ class Client:
         print('--> show_all_staffs')
         self.root.geometry('450x450')
         self.root.all_staffs_frame = tk.Frame(self.root)
-        self.root.all_staffs_frame.title = tk.Label(self.root.all_staffs_frame, text="Danh sach nhan vien", font=("Consolas 20 bold")).pack(pady=10)
+        self.root.all_staffs_frame.title = tk.Label(
+            self.root.all_staffs_frame, text="Danh sach nhan vien", font=("Consolas 20 bold")).pack(pady=10)
         self.all_staffs = ttk.Treeview(self.root.all_staffs_frame)
         self.all_staffs['columns'] = ("ID", "NAME")
         # self.all_staffs.column("AVATAR", anchor="center", width=100)
@@ -86,15 +88,18 @@ class Client:
         self.root.all_staffs_frame.img_temp = []
         self.root.size_staffs = int(len(staffs[0])/len(staffs))+1
         for i in range(self.root.size_staffs):
-            self.root.all_staffs_frame.img_temp.append(ImageTk.PhotoImage(Image.open(staffs[i][5]).resize((20,20), Image.ANTIALIAS)))
-            self.all_staffs.insert('', tk.END, image=self.root.all_staffs_frame.img_temp[i], values=(staffs[i][0], staffs[i][1]))
+            self.root.all_staffs_frame.img_temp.append(ImageTk.PhotoImage(
+                Image.open(staffs[i][5]).resize((20, 20), Image.ANTIALIAS)))
+            self.all_staffs.insert('', tk.END, image=self.root.all_staffs_frame.img_temp[i], values=(
+                staffs[i][0], staffs[i][1]))
         # self.all_staffs.insert('', tk.END, values=staffs[0][0:2])
         # self.all_staffs.insert('', tk.END, values=staffs[1][0:2])
         # self.all_staffs.insert('', tk.END, values=staffs[2][0:2])
         # Test
         self.all_staffs.pack(pady=20)
 
-        self.root.all_staffs_frame.download_all_ava = tk.Button(self.root.all_staffs_frame, text="Tải tất cả ảnh", command=self.change_to_download_all_btn)
+        self.root.all_staffs_frame.download_all_ava = tk.Button(
+            self.root.all_staffs_frame, text="Tải tất cả ảnh", command=self.change_to_download_all_btn)
         self.root.all_staffs_frame.download_all_ava.pack()
 
         # Back button
@@ -157,11 +162,14 @@ class Client:
         self.root.staff_detail_frame.infor.pack()
 
         # Avatar
-        self.root.staff_detail_frame.avatar = ImageTk.PhotoImage(Image.open(staffs[iid][5]).resize((100,100), Image.ANTIALIAS))
-        tk.Label(self.root.staff_detail_frame, image=self.root.staff_detail_frame.avatar).pack(pady=10)
+        self.root.staff_detail_frame.avatar = ImageTk.PhotoImage(
+            Image.open(staffs[iid][5]).resize((100, 100), Image.ANTIALIAS))
+        tk.Label(self.root.staff_detail_frame,
+                 image=self.root.staff_detail_frame.avatar).pack(pady=10)
 
         # Download button
-        self.root.staff_detail_frame.download_btn = tk.Button(self.root.staff_detail_frame, text="Tải ảnh đại diện", command=self.change_to_download_big_avatar)
+        self.root.staff_detail_frame.download_btn = tk.Button(
+            self.root.staff_detail_frame, text="Tải ảnh đại diện", command=self.change_to_download_big_avatar)
         self.root.staff_detail_frame.download_btn.pack()
 
         # Back button
@@ -179,86 +187,51 @@ class Client:
         self.root.all_staffs_frame.forget()
         self.load_gui()
 
-# print('Client')
-# client = Client()
-# client.run()
+    def change_to_download_big_avatar(self):
+        location = filedialog.askdirectory()
+        print(location)
+        print(self.root.staff_detail_frame.avatar)
+        print(type(self.root.staff_detail_frame.avatar))
 
+        shutil.copy(staffs[self.root.iid_staffs][5], location)
 
-def change_to_download_big_avatar(self):
-    location = filedialog.askdirectory()
-    print(location)
-    print(self.root.staff_detail_frame.avatar)
-    print(type(self.root.staff_detail_frame.avatar))
+    def change_to_download_all_btn(self):
+        location = filedialog.askdirectory()
+        des = location + '/all_small_ava/'
+        if not os.path.exists(des):
+            os.mkdir(des)
+        for i in range(self.root.size_staffs):
+            shutil.copy(staffs[i][5], des)
 
-    shutil.copy(staffs[self.root.iid_staffs][5], location)
-
-def change_to_download_all_btn(self):
-    location =  filedialog.askdirectory()
-    des = location + '/all_small_ava/'
-    if not os.path.exists(des):
-        os.mkdir(des) 
-    for i in range(self.root.size_staffs):
-        shutil.copy(staffs[i][5], des)
 
 print('Client')
-# client = Client()
-# client.run()
+client = Client()
+client.run()
 
 
-
-BUFFER_SIZE = 1024
-SEPARATOR = "<SEPERATOR>"
-
-
-def receive_file(s):
-    file_name, file_size = s.recv(
-        BUFFER_SIZE).decode("utf8").split(SEPARATOR)
-
-    # remove absolute path if there is
-    file_name = os.path.basename(file_name)
-    # convert to integer
-    file_size = int(file_size)
-
-    print("File Size: ", file_size)
-    current = 0
-    with open(file_name, "wb") as f:
-        while current < file_size:
-            # read 1024 bytes from the socket (receive)
-            bytes_read = s.recv(BUFFER_SIZE)
-            current += len(bytes_read)
-            # print("Continue reiceive...", current)
-            if not bytes_read:
-                break
-            # print('pass')
-            # write to the file the bytes we just received
-            f.write(bytes_read)
-            # print('pass 1')
-        f.close()
+# ----------------------------------------------------//----------------------------------------------------
+# ALL OF THEM BELOW -> SHOULD BE EMBEDED IN "Client" class
+BUFFER_SIZE = 4096
+SEPARATOR = "<,>"
 
 
-def receive_all_contact(s):
-
-    number_of_contacts = int(s.recv(BUFFER_SIZE).decode("utf8"))
-    print("Number of contacts:", number_of_contacts)
-
-    for i in range(number_of_contacts):
-        print(f'Receiving contact {i + 1}:')
-        data = s.recv(BUFFER_SIZE).decode("utf8")
-        print(data)
+# You should consider the usage of these functions, never mind implementations
+def receive_all_contact(s: socket.socket):  # Feature 1
+    data = s.recv(BUFFER_SIZE).decode("utf8").split(SEPARATOR)
+    print([(data[i], data[i+1]) for i in range(0, len(data), 2)])
+    return [(data[i], data[i+1]) for i in range(0, len(data), 2)]
 
 
-def receive_all_contact_thumbnail(s):
+def receive_all_contact_thumbnail(s: socket.socket):  # Feature 4
 
     connbuf = buffer.Buffer(s)
 
     while True:
-        print("Loop")
         file_name = connbuf.get_utf8()
-        print("Loop 1")
         if not file_name:
             break
         file_name = os.path.join(
-            'source/client/downloads', os.path.basename(file_name))
+            'source/client/downloads/thumbnails', os.path.basename(file_name))
         print('file name: ', file_name)
 
         file_size = int(connbuf.get_utf8())
@@ -279,29 +252,73 @@ def receive_all_contact_thumbnail(s):
                 print('File received successfully.')
 
 
+def recieve_contact(s: socket.socket):  # Feature 2
+    data = s.recv(BUFFER_SIZE).decode("utf8").split(SEPARATOR)
+    print(data)
+    return data
+
+
+def recieve_contact_avatar(s: socket.socket):  # Feature 5
+    connbuf = buffer.Buffer(s)
+
+    while True:
+        file_name = connbuf.get_utf8()
+        if not file_name:
+            break
+        file_name = os.path.join(
+            'source/client/downloads/avatars', os.path.basename(file_name))
+        print('file name: ', file_name)
+
+        file_size = int(connbuf.get_utf8())
+        print('file size: ', file_size)
+
+        with open(file_name, 'wb') as f:
+            remaining = file_size
+            while remaining:
+                chunk_size = 4096 if remaining >= 4096 else remaining
+                chunk = connbuf.get_bytes(chunk_size)
+                if not chunk:
+                    break
+                f.write(chunk)
+                remaining -= len(chunk)
+            if remaining:
+                print('File incomplete.  Missing', remaining, 'bytes.')
+            else:
+                print('File received successfully.')
+
+    return 0
+
+
+# DEMO PROGRAM
 def client_program():
     HOST = '127.0.1.1'  # The server's hostname or IP address
     PORT = int(input("ENter Port:"))        # The port used by the server
     # Create a TCP/IP socket
-    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s = socket.socket()
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # s = socket.socket()
     server_address = (HOST, PORT)
     print('connecting to %s port ' + str(server_address))
     s.connect(server_address)
 
     try:
         while True:
-            msg = input('Client: ')
-            s.sendall(bytes(msg, "utf8"))
+            cmd = input('Client: ')
+            s.sendall(bytes(cmd, "utf8"))
 
-            if msg == "quit":
+            if cmd == 'GETALL 0':  # Get (id, name) of all contacts
+                receive_all_contact(s)
+            elif cmd == 'GETALL 1':  # Get thumbnails of all contacts
+                receive_all_contact_thumbnail(s)
+            elif cmd == 'QUIT':
                 break
+            else:
+                # Get (id, name, phone, email) of contact,  Ex: GET 0 3 -> get id = 3
+                if cmd[:5] == 'GET 0':
+                    recieve_contact(s)
+                elif cmd[:5] == 'GET 1':  # Get avatar of contact, Ex: GET 1 3 -> get id = 3
+                    recieve_contact_avatar(s)
 
-            receive_all_contact_thumbnail(s)
             print("Completed")
-            # receive_all_contact(s)
-            # data = s.recv(BUFFER_SIZE)
-            # print('Server: ', data.decode("utf8"))
 
     finally:
         print('closing socket')
