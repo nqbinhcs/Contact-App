@@ -1,8 +1,13 @@
+from http import client
 import os
 import socket
 import tkinter as tk
+import buffer
+
+from database import *
 from threading import Thread
 from PIL import Image, ImageTk
+import random
 
 
 def server_program():
@@ -34,10 +39,19 @@ def server_program():
     conn.close()  # close the connection
 
 
+BUFFER_SIZE = 1024
+SEPARATOR = "<SEPERATOR>"
+
+PORT = random.randrange(60000, 62000)
+
+
 class Server:
+
+    db = ContactsDataBase()
+
     def __init__(self):
         # IP address
-        self.IP = (socket.gethostbyname(socket.gethostname()), 54321)
+        self.IP = (socket.gethostbyname(socket.gethostname()), PORT)
 
         # Intialize UI
         self.root = tk.Tk()
@@ -64,15 +78,17 @@ class Server:
 
     def turn_on_off(self):
         if self.root.turn_on_off_button["text"] == "OPEN SERVER":
+            # config for TCP option
+            # self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server = socket.socket()
-
             self.server.bind(self.IP)
             self.server.listen(1)
             print("SERVER ADDRESS:", self.IP)
 
             self.root.turn_on_off_button.configure(text="OPENING")
 
-            Thread(target=self.accept_connect, daemon=True).start()
+            # Thread(target=self.accept_connect, daemon=True).start()
+            self.accept_connect()
 
     def accept_connect(self):
         while True:
@@ -84,12 +100,80 @@ class Server:
 
     def handle_client(self):
         while True:
-            cmd = self.client.recv(16).decode('utf8')
-            print('REQUEST:', cmd)
-            if cmd == 'close':
+            try:
+                cmd = self.client.recv(64).decode('utf8')
+            except:
+                break
+            if cmd == 'GETALL 0':
+                self.send_all_contacts()
+            elif cmd == 'GETALL 1':
+                self.send_all_contacts_thumbnail()
+            elif cmd == 'GET':
+                self.shutdown()
+            elif cmd == 'QUIT':
                 self.client.close()
+                break
+
+        # cmd = self.client.recv(64).decode('utf8')
+        # if cmd == 'GETALL 1':
+        #     self.send_all_contacts_thumbnail()
+
+    def send_file(self, file_name):
+        file_size = os.path.getsize(file_name)
+
+        self.client.sendall(
+            f"{file_name}{SEPARATOR}{file_size}".encode())
+
+        with open(file_name, "rb") as f:
+            while True:
+                # read the bytes from the file
+                bytes_read = f.read(BUFFER_SIZE)
+                if not bytes_read:
+                    break
+                self.client.sendall(bytes_read)
+
+    def send_all_contacts(self):
+        result = self.db.get_all_contacts()
+        print(result)
+        number_of_contacts = len(result)
+        self.client.sendall(bytes(str(number_of_contacts), "utf8"))
+
+        for i in range(number_of_contacts):
+            print(f'Sending contact {i + 1}:')
+            data = SEPARATOR.join([str(x) for x in result[i]])
+            self.client.sendall(bytes(data, "utf8"))
+
+    def send_all_contacts_thumbnail(self):
+        sbuf = buffer.Buffer(self.client)
+        files_to_send = self.db.get_all_contacts_thumbnail()
+
+        for file_name in files_to_send:
+            print(file_name)
+            sbuf.put_utf8(file_name)
+
+            file_size = os.path.getsize(file_name)
+            sbuf.put_utf8(str(file_size))
+
+            with open(file_name, 'rb') as f:
+                sbuf.put_bytes(f.read())
+            print('File Sent')
+
+        
+        # number_of_contacts = len(result)
+        # print('Sending number of contacts')
+        # self.client.sendall(bytes(str(number_of_contacts), "utf8"))
+        # self.client.sendall(bytes(str(number_of_contacts), "utf8"))
+        # for i in range(number_of_contacts):
+        #     print(f'Sending thumbnail contact {i + 1}:')
+
+        #     # print("Sending ID")
+        #     # self.client.sendall(bytes(str(result[i][0]), "utf8"))
+
+        #     print("Sending thumbnail")
+        #     self.send_file(result[i][1])
 
 
 print("SERVER")
 app = Server()
 app.run()
+app.server.close()
