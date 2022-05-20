@@ -13,9 +13,9 @@ from tkinter import filedialog
 import shutil
 
 
-avatar_path = "source/client/downloads/avatars"
-thumbnail_path = "source/client/downloads/thumbnails"
-default_img_path = "source/client/assets/default.png"
+avatar_path = "\source\client\downloads\\avatars"
+thumbnail_path = "\source\client\downloads\thumbnails"
+default_img_path = "\source\client\\assets\default.png"
 
 BUFFER_SIZE = 4096
 SEPARATOR = "<,>"
@@ -95,11 +95,11 @@ class Client:
         self.client.sendall(bytes("GETALL 0", "utf8"))
         self.root.all_staffs_frame.all_staffs = self.receive_all_contact()
         
-
+        
         for i in range(len(self.root.all_staffs_frame.all_staffs)):
-            path = default_img_path
-            if os.path.exists(os.path.join(thumbnail_path, "Image_", str(self.root.all_staffs_frame.all_staffs[i][0])+".png")):
-                path = os.path.join(thumbnail_path, "Image_", str(self.root.all_staffs_frame.all_staffs[i][0])+".png")
+            path = os.getcwd()+default_img_path
+            if os.path.exists(os.getcwd()+thumbnail_path+"Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"):
+                path = os.getcwd()+thumbnail_path+"Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"
 
             self.root.all_staffs_frame.img_temp.append(ImageTk.PhotoImage(
                 Image.open(path).resize((20, 20), Image.ANTIALIAS)))
@@ -171,9 +171,9 @@ class Client:
         self.root.staff_detail_frame.infor.pack()
 
         # Avatar
-        path = default_img_path
-        if os.path.exists(os.path.join(avatar_path, "Image_", str(id)+".png")):
-            path = os.path.join(thumbnail_path, "Image_", str(id)+".png")
+        path = os.getcwd()+default_img_path
+        if os.path.exists(os.getcwd()+avatar_path+"/Image_"+str(ID)+".png"):
+            path = os.getcwd()+avatar_path+"/Image_"+str(ID)+".png"
 
 
         self.root.staff_detail_frame.avt_img = ImageTk.PhotoImage(
@@ -204,23 +204,24 @@ class Client:
 
     def change_to_download_big_avatar(self):
         id = str(self.root.staff_detail_frame.id.get())
-        # location = os.path.join(avatar_path, "Image_"+id+".png")
-        # print(location)
-        # print(self.root.staff_detail_frame.avatar)
-        # print(type(self.root.staff_detail_frame.avatar))
         self.client.sendall(bytes("GET 1 " + id, "utf8"))
-        self.root.staff_detail_frame.avt_img = self.recieve_contact_avatar()
-        tk.Label(self.root.staff_detail_frame, image=self.root.staff_detail_frame.avt_img).pack()
+        self.recieve_contact_avatar()
+        self.root.staff_detail_frame.avt_img = ImageTk.PhotoImage(
+            Image.open(os.getcwd()+avatar_path+"/Image_"+id+".png").resize((100, 100), Image.ANTIALIAS))
         self.root.staff_detail_frame.avatar.config(image=self.root.staff_detail_frame.avt_img)
-        self.root.staff_detail_frame.avt_img.save(avatar_path+"/Image_"+id+".png")
 
     def change_to_download_all_btn(self):
-        location = filedialog.askdirectory()
-        des = location + '/all_small_ava/'
-        if not os.path.exists(des):
-            os.mkdir(des)
-        for i in range(self.root.size_staffs):
-            shutil.copy(staffs[i][5], des)
+        self.client.sendall(bytes("GETALL 1 ", "utf8"))
+        self.receive_all_contact_thumbnail()
+        for i in range(len(self.root.all_staffs_frame.all_staffs)):
+            path = os.getcwd()+default_img_path
+            if os.path.exists(os.getcwd()+thumbnail_path+"Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"):
+                path = os.getcwd()+thumbnail_path+"Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"
+    
+            self.root.all_staffs_frame.img_temp.append(ImageTk.PhotoImage(
+                Image.open(path).resize((20, 20), Image.ANTIALIAS)))
+            selected_item = self.all_staffs.selection()[i]
+            self.all_staffs.item(selected_item, image=self.root.all_staffs_frame.img_temp[-1])
 
     def receive_all_contact(self):  # Feature 1
         print("recieve_all_contact #1")
