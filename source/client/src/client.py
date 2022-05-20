@@ -106,7 +106,7 @@ class Client:
         self.client.sendall(bytes("GETALL 0", "utf8"))
         self.root.all_staffs_frame.all_staffs = self.receive_all_contact()
         
-
+        
         for i in range(len(self.root.all_staffs_frame.all_staffs)):
             temp_path = default_img_path
 
