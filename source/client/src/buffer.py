@@ -27,14 +27,14 @@ class Buffer:
         '''Read a null-terminated UTF8 data string and decode it.
            Return an empty string if the socket closes before receiving a null.
         '''
-        while b'\x00' not in self.buffer: # Time out
-            self.sock.settimeout(0.5)
+        while b'\x00' not in self.buffer:  # Time out
+            self.sock.settimeout(2)
             data = None
             try:
                 data = self.sock.recv(1024)
             except:
                 pass
-                
+
             print("Receive complete")
             if not data:
                 return ''

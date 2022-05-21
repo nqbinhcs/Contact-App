@@ -55,7 +55,7 @@ class Server:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             # self.server = socket.socket()
             self.server.bind(self.IP)
-            self.server.listen(1)
+            self.server.listen(5)
             print("SERVER ADDRESS:", self.IP)
 
             self.root.turn_on_off_button.configure(text="OPENING")
@@ -83,11 +83,11 @@ class Server:
             elif cmd == 'QUIT':
                 self.client.close()
                 break
-            else: 
-                if cmd[:5] == 'GET 0': # Ex: GET 0 3 -> get id = 3
-                    self.send_contact(contact_id = int(cmd[5:]))
-                elif cmd[:5] == 'GET 1': # GET 1 3 -> get_id = 3
-                    self.send_contact_avatar(contact_id =  int(cmd[5:]))
+            else:
+                if cmd[:5] == 'GET 0':  # Ex: GET 0 3 -> get id = 3
+                    self.send_contact(contact_id=int(cmd[5:]))
+                elif cmd[:5] == 'GET 1':  # GET 1 3 -> get_id = 3
+                    self.send_contact_avatar(contact_id=int(cmd[5:]))
 
     def send_all_contacts(self):
         contacts = self.db.get_all_contacts()

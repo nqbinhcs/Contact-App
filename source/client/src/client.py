@@ -13,12 +13,13 @@ from tkinter import filedialog
 import shutil
 
 
-avatar_path = "source/client/downloads/avatars"
-thumbnail_path = "source/client/downloads/thumbnails"
-default_img_path = "source/client/assets/default.png"
+avatar_path = os.path.join('source', 'client', 'downloads', 'avatars')
+thumbnail_path = os.path.join('source', 'client', 'downloads', 'thumbnails')
+default_img_path = os.path.join('source', 'client', 'assets', 'default.png')
 
 BUFFER_SIZE = 4096
 SEPARATOR = "<,>"
+
 
 class Client:
     def __init__(self):
@@ -53,7 +54,6 @@ class Client:
     def run(self):
         print('--> run')
         self.root.mainloop()
-
 
     def connect(self):
         print('--> connect')
@@ -94,19 +94,18 @@ class Client:
 
         self.all_staffs = ttk.Treeview(self.root.all_staffs_frame)
         self.all_staffs['columns'] = ("ID", "NAME")
-        
+
         self.all_staffs.column("#0", anchor="w", width=30, stretch='NO')
         self.all_staffs.column("ID", anchor="center", width=120, stretch='NO')
         self.all_staffs.column("NAME", anchor="w", width=200, stretch='NO')
 
         self.all_staffs.heading("ID", text="Id", anchor="center")
         self.all_staffs.heading("NAME", text="Full name", anchor="w")
-        
+
         self.root.all_staffs_frame.img_temp = []
         self.client.sendall(bytes("GETALL 0", "utf8"))
         self.root.all_staffs_frame.all_staffs = self.receive_all_contact()
-        
-        
+
         for i in range(len(self.root.all_staffs_frame.all_staffs)):
             temp_path = default_img_path
 
@@ -115,10 +114,14 @@ class Client:
             # - False: temp_path = default_img_path
             if self.root.check_thumbnail_loaded:
                 temp_path = thumbnail_path
-                
-            path = os.getcwd()+ "/" + temp_path
-            if os.path.exists(path+"/Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"):
-                path = path+"/Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"
+
+            # path = os.getcwd()+ "/" + temp_path
+            path = os.path.join(os.getcwd(), temp_path)
+
+            file_image = "Image_" + \
+                str(self.root.all_staffs_frame.all_staffs[i][0])+".png"
+            if os.path.exists(os.path.join(path, file_image)):
+                path = os.path.join(path, file_image)
 
             self.root.all_staffs_frame.img_temp.append(ImageTk.PhotoImage(
                 Image.open(path).resize((20, 20), Image.ANTIALIAS)))
@@ -197,15 +200,20 @@ class Client:
         self.root.staff_detail_frame.infor.grid(column=0, row=1, columnspan=3)
 
         # Avatar
-        path = os.getcwd()+ "/" + default_img_path
-        if os.path.exists(os.getcwd()+"/"+avatar_path+"/Image_"+str(ID)+".png"):
-            path = os.getcwd()+"/"+avatar_path+"/Image_"+str(ID)+".png"
+        # path = os.getcwd()+ "/" + default_img_path
+        # if os.path.exists(os.getcwd()+"/"+avatar_path+"/Image_"+str(ID)+".png"):
+        #     path = os.getcwd()+"/"+avatar_path+"/Image_"+str(ID)+".png"
 
+        path = os.path.join(os.getcwd(), default_img_path)
+        file_name = "Image_"+str(ID)+".png"
+        if os.path.exists(os.path.join(os.getcwd(), avatar_path, file_name)):
+            path = os.path.join(os.getcwd(), avatar_path, file_name)
 
         self.root.staff_detail_frame.avt_img = ImageTk.PhotoImage(
             Image.open(path).resize((100, 100), Image.ANTIALIAS))
-        self.root.staff_detail_frame.avatar = tk.Label(self.root.staff_detail_frame, image=self.root.staff_detail_frame.avt_img)
-        self.root.staff_detail_frame.avatar.grid(column=0,row=2,columnspan=3)
+        self.root.staff_detail_frame.avatar = tk.Label(
+            self.root.staff_detail_frame, image=self.root.staff_detail_frame.avt_img)
+        self.root.staff_detail_frame.avatar.grid(column=0, row=2, columnspan=3)
 
         # Download button
         self.root.staff_detail_frame.download_btn = tk.Button(
@@ -224,7 +232,6 @@ class Client:
 
         self.root.staff_detail_frame.pack()
 
-
     def change_to_show_all_staffs(self):
         self.root.staff_detail_frame.forget()
         self.show_all_staffs()
@@ -237,42 +244,50 @@ class Client:
         id = str(self.root.staff_detail_frame.id.get())
         self.client.sendall(bytes("GET 1 " + id, "utf8"))
         self.receive_contact_avatar()
+        file_name = "Image_"+id+".png"
+        file_path = os.path.join(os.getcwd(), avatar_path, file_name)
         self.root.staff_detail_frame.avt_img = ImageTk.PhotoImage(
-            Image.open(os.getcwd()+"/"+avatar_path+"/Image_"+id+".png").resize((100, 100), Image.ANTIALIAS))
-        self.root.staff_detail_frame.avatar.config(image=self.root.staff_detail_frame.avt_img)
+            Image.open(file_path).resize((100, 100), Image.ANTIALIAS))
+        self.root.staff_detail_frame.avatar.config(
+            image=self.root.staff_detail_frame.avt_img)
 
     def change_to_download_all_btn(self):
         self.client.sendall(bytes("GETALL 1", "utf8"))
         self.receive_all_contact_thumbnail()
         for i in range(len(self.root.all_staffs_frame.all_staffs)):
-            path = os.getcwd()+"/"+default_img_path
-            if os.path.exists(os.getcwd()+"/"+thumbnail_path+"Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"):
-                path = os.getcwd()+"/"+thumbnail_path+"Image_"+str(self.root.all_staffs_frame.all_staffs[i][0])+".png"
+            path = os.path.join(os.getcwd(), default_img_path)
+            file_name = "Image_" + \
+                str(self.root.all_staffs_frame.all_staffs[i][0])+".png"
+            if os.path.exists(os.path.join(os.getcwd(), thumbnail_path, file_name)):
+                path = os.path.join(os.getcwd(), thumbnail_path, file_name)
         self.root.check_thumbnail_loaded = True
         self.show_all_staffs()
 
     def display_avatar(self):
         self.root.avatar_display = Toplevel(self.root)
         self.root.avatar_display.title("Show avatar")
- 
+
         # sets the geometry of toplevel
         self.root.avatar_display.geometry("200x200")
 
         iid = int(self.all_staffs.focus()[1:])-1
 
-        self.root.avatar_display.img_temp = ImageTk.PhotoImage(Image.open(os.getcwd()+ "/" + avatar_path+"/Image_"+str(self.root.all_staffs_frame.all_staffs[iid][0])+".png").resize((180, 180), Image.ANTIALIAS))
-        tmp = tk.Label(self.root.avatar_display,image=self.root.avatar_display.img_temp)
+        self.root.avatar_display.img_temp = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(
+        ), avatar_path, "Image_"+str(self.root.all_staffs_frame.all_staffs[iid][0])+".png")).resize((180, 180), Image.ANTIALIAS))
+        tmp = tk.Label(self.root.avatar_display,
+                       image=self.root.avatar_display.img_temp)
         tmp.pack()
 
     def display_thumbnails(self):
         self.root.thumbnail_display = Toplevel(self.root)
         self.root.thumbnail_display.title("Show thumbnails")
- 
+
         # sets the geometry of toplevel (should be 450 x 300)
         self.root.thumbnail_display.geometry("260x100")
 
         self.root.thumbnail_display.img_temp = []
-        self.root.thumbnail_display.size = len(self.root.all_staffs_frame.all_staffs)
+        self.root.thumbnail_display.size = len(
+            self.root.all_staffs_frame.all_staffs)
         for i in range(int(self.root.thumbnail_display.size / 5)+1):
             if i == int(self.root.thumbnail_display.size/5):
                 loop_inside = self.root.thumbnail_display.size % 5
@@ -281,11 +296,13 @@ class Client:
             print("i = " + str(i))
             print("loop = " + str(loop_inside))
             for j in range(loop_inside):
-                    print("i, j = " + str(i) + ", " + str(j))
-                    self.root.thumbnail_display.img_temp.append(ImageTk.PhotoImage(Image.open(os.getcwd()+ "/" + thumbnail_path+"/Image_"+str(self.root.all_staffs_frame.all_staffs[j+i*5][0])+".png").resize((80, 80), Image.ANTIALIAS)))
-                    tmp = tk.Label(self.root.thumbnail_display,image=self.root.thumbnail_display.img_temp[-1])
-                    tmp.grid(column=j,row=i)
-                
+                print("i, j = " + str(i) + ", " + str(j))
+                self.root.thumbnail_display.img_temp.append(ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(
+                ), thumbnail_path, "Image_"+str(self.root.all_staffs_frame.all_staffs[j+i*5][0])+".png")).resize((80, 80), Image.ANTIALIAS)))
+                tmp = tk.Label(self.root.thumbnail_display,
+                               image=self.root.thumbnail_display.img_temp[-1])
+                tmp.grid(column=j, row=i)
+
     def receive_all_contact(self):  # Feature 1
         print("receive_all_contact #1")
         data = self.client.recv(BUFFER_SIZE).decode("utf8").split(SEPARATOR)
@@ -299,11 +316,12 @@ class Client:
 
         while True:
             file_name = connbuf.get_utf8()
-            
+
             if not file_name:
                 break
+
             file_name = os.path.join(
-                'source/client/downloads/thumbnails', os.path.basename(file_name))
+                thumbnail_path, os.path.basename(file_name))
             print('file name: ', file_name)
 
             file_size = int(connbuf.get_utf8())
@@ -323,12 +341,10 @@ class Client:
                 else:
                     print('File received successfully.')
 
-
     def receive_contact(self):  # Feature 2
         data = self.client.recv(BUFFER_SIZE).decode("utf8").split(SEPARATOR)
         print(data)
         return data
-
 
     def receive_contact_avatar(self):  # Feature 5
         connbuf = buffer.Buffer(self.client)
@@ -338,7 +354,7 @@ class Client:
             if not file_name:
                 break
             file_name = os.path.join(
-                'source/client/downloads/avatars', os.path.basename(file_name))
+                avatar_path, os.path.basename(file_name))
             print('file name: ', file_name)
 
             file_size = int(connbuf.get_utf8())
@@ -359,7 +375,6 @@ class Client:
                     print('File received successfully.')
 
         return 0
-
 
     # DEMO PROGRAM
     # def client_program():
