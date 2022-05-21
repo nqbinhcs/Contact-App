@@ -2,6 +2,7 @@ from http import client
 import os
 import socket
 import tkinter as tk
+from tkinter import ttk
 import buffer
 
 from database import *
@@ -16,6 +17,7 @@ SEPARATOR = "<,>"
 # We use random port
 PORT = random.randrange(60000, 62000)
 
+icon_path = os.path.join('source', 'server', 'assets', 'icon.ico')
 
 class Server:
 
@@ -28,23 +30,36 @@ class Server:
 
         # Intialize UI
         self.root = tk.Tk()
+        self.root.iconbitmap(icon_path)
+
+        style = ttk.Style(self.root)
+
+        self.root.tk.call("source", 'forest-light.tcl')
+        style.theme_use('forest-light')
+
         self.root.geometry('450x250')
+
         self.root.title('Server')
 
+
         # Button
-        self.root.turn_on_off_button = tk.Button(self.root, text="OPEN SERVER", bg="#5DADE2",
-                                                 width=200, anchor=tk.CENTER,
-                                                 font=("Consolas 20 bold"), command=self.turn_on_off,
-                                                 compound=tk.TOP)
+        self.root.turn_on_off_button = ttk.Button(self.root, text="OPEN SERVER",  style="Accent.TButton",
+                                                  command=self.turn_on_off,
+                                                  compound=tk.TOP)
 
         self.root.turn_on_off_button.place(
             relx=0.5, rely=0.6, anchor=tk.CENTER)
 
-        self.root.lbl_server_address = tk.Label(self.root, text="Address: " + str(self.IP[0]) + ' - ' + str(PORT), width=25,
+        self.root.lbl_server_address = ttk.Label(self.root, text="IP: " + str(self.IP[0]), width=25, foreground="#458B74",
 
-                                                font=("Consolas 20 bold"), fg="#ff0000")
+                                                 font=("Consolas 20 bold"))
         self.root.lbl_server_address.place(
-            relx=0.5, rely=0.10, anchor=tk.CENTER)
+            relx=0.72, rely=0.10, anchor=tk.CENTER)
+
+        self.root.lbl_port = ttk.Label(self.root, text="Port: " + str(PORT), width=25, foreground="#458B74",
+                                       font=("Consolas 20 bold"))
+        self.root.lbl_port.place(
+            relx=0.72, rely=0.25, anchor=tk.CENTER)
 
     def run(self):
         self.root.mainloop()
@@ -135,4 +150,4 @@ class Server:
 print("SERVER")
 app = Server()
 app.run()
-app.server.close()
+

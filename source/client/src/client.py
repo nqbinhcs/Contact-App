@@ -4,6 +4,8 @@ import socket
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
+
+
 from threading import Thread
 import buffer
 import PIL
@@ -17,6 +19,7 @@ avatar_path = os.path.join('source', 'client', 'downloads', 'avatars')
 thumbnail_path = os.path.join('source', 'client', 'downloads', 'thumbnails')
 default_img_path = os.path.join('source', 'client', 'assets', 'default.png')
 
+icon_path = os.path.join('source', 'client', 'assets', 'icon.ico')
 BUFFER_SIZE = 4096
 SEPARATOR = "<,>"
 
@@ -25,28 +28,37 @@ class Client:
     def __init__(self):
         print('--> __init__')
         self.root = tk.Tk()
+        self.root.iconbitmap(icon_path)
+
+        style = ttk.Style(self.root)
+
+        self.root.tk.call("source", "forest-light.tcl")
+
+        style.theme_use("forest-light")
+
         self.load_gui()
 
     def load_gui(self):
         print('--> load gui')
         self.root.geometry('450x250')
-        self.root.title('Danh bạ số')
+        self.root.title('Contacts')
 
         # Button
         # Connect
         self.root.connect_frame = tk.Frame(self.root)
-        self.root.connect_frame.ip_label = tk.Label(
+        self.root.connect_frame.ip_label = ttk.Label(
             self.root.connect_frame, text="IP").pack()
-        self.root.connect_frame.ip_entry = tk.Entry(self.root.connect_frame)
-        self.root.connect_frame.ip_entry.pack()
+        self.root.connect_frame.ip_entry = ttk.Entry(self.root.connect_frame)
+        self.root.connect_frame.ip_entry.insert(0, "127.0.1.1")
+        self.root.connect_frame.ip_entry.pack(pady=10)
 
-        self.root.connect_frame.port_label = tk.Label(
+        self.root.connect_frame.port_label = ttk.Label(
             self.root.connect_frame, text="Port").pack()
-        self.root.connect_frame.port_entry = tk.Entry(self.root.connect_frame)
+        self.root.connect_frame.port_entry = ttk.Entry(self.root.connect_frame)
         self.root.connect_frame.port_entry.pack()
 
-        self.root.connect_frame.connect_button = tk.Button(self.root.connect_frame, text="CONNECT TO SERVER", bg="#5DADE2",
-                                                           font=("Consolas 20 bold"), command=self.connect)
+        self.root.connect_frame.connect_button = ttk.Button(self.root.connect_frame, text="CONNECT TO SERVER",
+                                                            style="Accent.TButton", command=self.connect)
         self.root.connect_frame.connect_button.pack(pady=20)
 
         self.root.connect_frame.pack()
@@ -86,10 +98,10 @@ class Client:
 
         self.root.geometry('450x450')
 
-        self.root.all_staffs_frame = tk.Frame(self.root)
+        self.root.all_staffs_frame = ttk.Frame(self.root)
 
-        self.root.all_staffs_frame.title = tk.Label(
-            self.root.all_staffs_frame, text="Staff list", font=("Consolas 20 bold"))
+        self.root.all_staffs_frame.title = ttk.Label(
+            self.root.all_staffs_frame, text="Staff list", font=("Consolas 20 bold"), foreground="#458B74")
         self.root.all_staffs_frame.title.grid(row=0, column=0, columnspan=3)
 
         self.all_staffs = ttk.Treeview(self.root.all_staffs_frame)
@@ -131,19 +143,22 @@ class Client:
         # self.all_staffs.pack(pady=20)
         self.all_staffs.grid(row=1, column=0, columnspan=3)
 
-        self.root.all_staffs_frame.download_all_ava = tk.Button(
-            self.root.all_staffs_frame, text="Load all thumbnail photos", command=self.change_to_download_all_btn)
-        self.root.all_staffs_frame.download_all_ava.grid(column=0, row=2)
+        self.root.all_staffs_frame.download_all_ava = ttk.Button(
+            self.root.all_staffs_frame, text="Load all", style="Accent.TButton", command=self.change_to_download_all_btn)
+        self.root.all_staffs_frame.download_all_ava.grid(
+            column=0, row=2, pady=(10, 10))
 
         # Show img button
-        self.root.all_staffs_frame.show_thumbnail_btn = tk.Button(
-            self.root.all_staffs_frame, text="Show thumbnail", command=self.display_thumbnails)
-        self.root.all_staffs_frame.show_thumbnail_btn.grid(column=1, row=2)
+        self.root.all_staffs_frame.show_thumbnail_btn = ttk.Button(
+            self.root.all_staffs_frame, text="Show thumbnail", style="Accent.TButton", command=self.display_thumbnails)
+        self.root.all_staffs_frame.show_thumbnail_btn.grid(
+            column=1, row=2, pady=(10, 10))
 
         # Back button
-        self.root.all_staffs_frame.back_button = tk.Button(
-            self.root.all_staffs_frame, text="Back", command=self.change_to_connect)
-        self.root.all_staffs_frame.back_button.grid(column=2, row=2)
+        self.root.all_staffs_frame.back_button = ttk.Button(
+            self.root.all_staffs_frame, text="Back", style="Accent.TButton", command=self.change_to_connect)
+        self.root.all_staffs_frame.back_button.grid(
+            column=2, row=2, pady=(10, 10))
 
         self.root.all_staffs_frame.pack()
         self.all_staffs.bind("<Double-1>", self.show_detail_a_staff)
@@ -153,9 +168,10 @@ class Client:
         iid = int(self.all_staffs.focus()[1:])-1
         ID = self.root.all_staffs_frame.all_staffs[iid][0]
         # print(id)
-        self.root.staff_detail_frame = tk.Frame(self.root)
-        self.root.staff_detail_frame.title = tk.Label(
-            self.root.staff_detail_frame, text="Detail information", font=("Consolas 20 bold"))
+        self.root.staff_detail_frame = ttk.Frame(
+            self.root)
+        self.root.staff_detail_frame.title = ttk.Label(
+            self.root.staff_detail_frame, text="Detail information", font=("Consolas 20 bold"), foreground="#458B74")
 
         self.root.staff_detail_frame.title.grid(column=0, row=0, columnspan=3)
         self.client.sendall(bytes("GET 0" + " " + str(ID), "utf8"))
@@ -171,30 +187,30 @@ class Client:
         self.root.staff_detail_frame.email.set(infor[3])
 
         # Information
-        self.root.staff_detail_frame.infor = tk.Frame(
+        self.root.staff_detail_frame.infor = ttk.Frame(
             self.root.staff_detail_frame)
-        self.root.staff_detail_frame.infor.id = tk.Label(
+        self.root.staff_detail_frame.infor.id = ttk.Label(
             self.root.staff_detail_frame.infor, text="ID")
         self.root.staff_detail_frame.infor.id.grid(row=0, column=0)
-        self.root.staff_detail_frame.infor.name = tk.Label(
+        self.root.staff_detail_frame.infor.name = ttk.Label(
             self.root.staff_detail_frame.infor, text="Full name")
         self.root.staff_detail_frame.infor.name.grid(row=1, column=0)
-        self.root.staff_detail_frame.infor.phone = tk.Label(
+        self.root.staff_detail_frame.infor.phone = ttk.Label(
             self.root.staff_detail_frame.infor, text="Phone number")
         self.root.staff_detail_frame.infor.phone.grid(row=2, column=0)
-        self.root.staff_detail_frame.infor.email = tk.Label(
+        self.root.staff_detail_frame.infor.email = ttk.Label(
             self.root.staff_detail_frame.infor, text="Email")
         self.root.staff_detail_frame.infor.email.grid(row=3, column=0)
-        self.root.staff_detail_frame.infor.id = tk.Entry(
+        self.root.staff_detail_frame.infor.id = ttk.Entry(
             self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.id, state='disabled')
         self.root.staff_detail_frame.infor.id.grid(row=0, column=1)
-        self.root.staff_detail_frame.infor.name = tk.Entry(
+        self.root.staff_detail_frame.infor.name = ttk.Entry(
             self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.name, state='disabled')
         self.root.staff_detail_frame.infor.name.grid(row=1, column=1)
-        self.root.staff_detail_frame.infor.phone = tk.Entry(
+        self.root.staff_detail_frame.infor.phone = ttk.Entry(
             self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.phone, state='disabled')
         self.root.staff_detail_frame.infor.phone.grid(row=2, column=1)
-        self.root.staff_detail_frame.infor.email = tk.Entry(
+        self.root.staff_detail_frame.infor.email = ttk.Entry(
             self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.email, state='disabled')
         self.root.staff_detail_frame.infor.email.grid(row=3, column=1)
         self.root.staff_detail_frame.infor.grid(column=0, row=1, columnspan=3)
@@ -216,19 +232,22 @@ class Client:
         self.root.staff_detail_frame.avatar.grid(column=0, row=2, columnspan=3)
 
         # Download button
-        self.root.staff_detail_frame.download_btn = tk.Button(
-            self.root.staff_detail_frame, text="Load avatar", command=self.change_to_download_big_avatar)
-        self.root.staff_detail_frame.download_btn.grid(column=0, row=3)
+        self.root.staff_detail_frame.download_btn = ttk.Button(
+            self.root.staff_detail_frame, text="Load avatar", style="Accent.TButton", command=self.change_to_download_big_avatar)
+        self.root.staff_detail_frame.download_btn.grid(
+            column=0, row=3, padx=(10, 10), pady=(10, 10))
 
         # Display button
-        self.root.staff_detail_frame.download_btn = tk.Button(
-            self.root.staff_detail_frame, text="Show avatar", command=self.display_avatar)
-        self.root.staff_detail_frame.download_btn.grid(column=1, row=3)
+        self.root.staff_detail_frame.download_btn = ttk.Button(
+            self.root.staff_detail_frame, text="Show avatar", style="Accent.TButton", command=self.display_avatar)
+        self.root.staff_detail_frame.download_btn.grid(
+            column=1, row=3, padx=(10, 10), pady=(10, 10))
 
         # Back button
-        self.root.staff_detail_frame.back_button = tk.Button(
-            self.root.staff_detail_frame, text="Back", command=self.change_to_show_all_staffs)
-        self.root.staff_detail_frame.back_button.grid(column=2, row=3)
+        self.root.staff_detail_frame.back_button = ttk.Button(
+            self.root.staff_detail_frame, text="Back", style="Accent.TButton", command=self.change_to_show_all_staffs)
+        self.root.staff_detail_frame.back_button.grid(
+            column=2, row=3, padx=(10, 10), pady=(10, 10))
 
         self.root.staff_detail_frame.pack()
 
