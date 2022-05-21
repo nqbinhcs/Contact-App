@@ -62,12 +62,13 @@ class Client:
         self.root.connect_frame.connect_button.pack(pady=20)
 
         self.root.connect_frame.pack()
+        self.root.connect_frame.port_entry.bind("<Return>",self.connect)
 
     def run(self):
         print('--> run')
         self.root.mainloop()
 
-    def connect(self):
+    def connect(self, event):
         print('--> connect')
         self.ip = self.root.connect_frame.ip_entry.get()
         self.port = self.root.connect_frame.port_entry.get()
@@ -202,16 +203,16 @@ class Client:
             self.root.staff_detail_frame.infor, text="Email")
         self.root.staff_detail_frame.infor.email.grid(row=3, column=0)
         self.root.staff_detail_frame.infor.id = ttk.Entry(
-            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.id, state='disabled')
+            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.id, state='disabled', width=30)
         self.root.staff_detail_frame.infor.id.grid(row=0, column=1)
         self.root.staff_detail_frame.infor.name = ttk.Entry(
-            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.name, state='disabled')
+            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.name, state='disabled', width=30)
         self.root.staff_detail_frame.infor.name.grid(row=1, column=1)
         self.root.staff_detail_frame.infor.phone = ttk.Entry(
-            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.phone, state='disabled')
+            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.phone, state='disabled', width=30)
         self.root.staff_detail_frame.infor.phone.grid(row=2, column=1)
         self.root.staff_detail_frame.infor.email = ttk.Entry(
-            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.email, state='disabled')
+            self.root.staff_detail_frame.infor, textvariable=self.root.staff_detail_frame.email, state='disabled', width=30)
         self.root.staff_detail_frame.infor.email.grid(row=3, column=1)
         self.root.staff_detail_frame.infor.grid(column=0, row=1, columnspan=3)
 
